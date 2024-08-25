@@ -70,7 +70,7 @@ const PickAModel = () => {
           style={{
             borderWidth: 0.5,
             borderRadius: 12,
-            borderColor: COLORS.gray,
+            borderColor: COLORS.pink,
             padding: 10
           }}
           onPress={openPicker}
@@ -78,7 +78,7 @@ const PickAModel = () => {
           <Text
             style={{
               fontFamily: 'regular',
-              color: COLORS.gray,
+              color: COLORS.gray2,
               fontSize: 16
             }}
           >
@@ -91,7 +91,7 @@ const PickAModel = () => {
             marginTop: 50,
             borderWidth: 0.5,
             borderRadius: 999,
-            borderColor: COLORS.gray,
+            borderColor: COLORS.pink,
             padding: 10
           }}
           onPress={() => {
@@ -116,7 +116,7 @@ const PickAModel = () => {
               fontSize: 16
             }}
           >
-            <AntDesign name="arrowright" size={24} color={COLORS.gray} />
+            <AntDesign name="arrowright" size={24} color={COLORS.pink} />
           </Text>
         </TouchableOpacity>
       </View>
