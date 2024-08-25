@@ -18,7 +18,7 @@ export const Splash = () => {
     fadeIn()
     setTimeout(() => {
       router.push('/pick-model/picker')
-    }, 1000)
+    }, 2500)
   }, [])
 
   return (

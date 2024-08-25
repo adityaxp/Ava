@@ -1,11 +1,34 @@
-import {StyleSheet, Image, View} from 'react-native'
-import React from 'react'
+import {StyleSheet, Image} from 'react-native'
+import React, {useEffect, useState} from 'react'
 
-const CharacterCanvas = () => {
+interface CharacterCanvasProps {
+  animation: any[]
+  duration: number
+}
+
+const CharacterCanvas = ({animation, duration}: CharacterCanvasProps) => {
+  const [currentIndex, setCurrentIndex] = useState(0)
+
+  useEffect(() => {
+    // If there's only one image
+    if (animation.length > 1) {
+      const interval = setInterval(() => {
+        setCurrentIndex((prevIndex) => (prevIndex + 1) % animation.length)
+      }, duration)
+
+      return () => clearInterval(interval)
+    }
+  }, [animation, duration])
+
   return (
-    <View>
-      <Image source={{uri: require('../../assets/images/default.png')}} />
-    </View>
+    <Image
+      source={animation[currentIndex]}
+      style={{
+        width: '100%',
+        height: '85%',
+        resizeMode: 'cover'
+      }}
+    />
   )
 }
 

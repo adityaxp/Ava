@@ -8,7 +8,7 @@ export const globalStyles = StyleSheet.create({
   },
   splashText: {
     fontFamily: 'cool',
-    color: COLORS.white,
+    color: COLORS.pink,
     fontSize: 88
   }
 })

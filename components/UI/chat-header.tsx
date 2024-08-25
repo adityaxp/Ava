@@ -1,10 +1,17 @@
 import {Text, TouchableOpacity, View} from 'react-native'
-import React from 'react'
+import React, {SetStateAction} from 'react'
 import {COLORS} from '../../infrastructure/themes'
 import {MaterialIcons, Ionicons} from '@expo/vector-icons'
 import {router} from 'expo-router'
+import {RNLlamaOAICompatibleMessage} from 'llama.rn/lib/typescript/chat'
+import {default_message} from '../../constants'
 
-const ChatHeader = () => {
+interface chatHeaderProps {
+  setConversation: React.Dispatch<SetStateAction<RNLlamaOAICompatibleMessage[]>>
+  responseState: boolean
+}
+
+const ChatHeader = ({setConversation, responseState}: chatHeaderProps) => {
   return (
     <View style={{flexDirection: 'row', marginVertical: 10}}>
       <View
@@ -49,6 +56,9 @@ const ChatHeader = () => {
           width: 50,
           borderRadius: 10,
           elevation: 5
+        }}
+        onPress={() => {
+          if (!responseState) setConversation(default_message)
         }}
       >
         <Ionicons name="refresh" size={24} color={COLORS.pink} />

@@ -1,58 +1,81 @@
 import {
+  Keyboard,
   KeyboardAvoidingView,
-  Text,
   TextInput,
   TouchableOpacity,
   View
 } from 'react-native'
-import React, {useEffect, useState} from 'react'
+import React, {SetStateAction, useEffect, useState} from 'react'
 import {COLORS} from '../../infrastructure/themes'
-import {AntDesign} from '@expo/vector-icons'
+import {AntDesign, FontAwesome6} from '@expo/vector-icons'
 import {LlamaContext} from 'llama.rn'
 import useChatCompletion from '../../hooks/useChatCompletion'
 import Snackbar from 'react-native-snackbar'
-import {system_prompt} from '../../constants'
 import {RNLlamaOAICompatibleMessage} from 'llama.rn/lib/typescript/chat'
+import useTTS from '../../hooks/useTTS'
 
 interface chatConatainerProps {
   model: LlamaContext | null
   isLoading: boolean
+  responseState: boolean
+  isTTSActive: boolean
+  conversation: RNLlamaOAICompatibleMessage[]
+  setResponseState: React.Dispatch<SetStateAction<boolean>>
+  setConversation: React.Dispatch<SetStateAction<RNLlamaOAICompatibleMessage[]>>
+  setIsTTSActive: React.Dispatch<SetStateAction<boolean>>
 }
 
-const ChatContainer = ({model, isLoading}: chatConatainerProps) => {
+const ChatContainer = ({
+  model,
+  isLoading,
+  responseState,
+  setResponseState,
+  conversation,
+  setConversation,
+  setIsTTSActive,
+  isTTSActive
+}: chatConatainerProps) => {
   const [chatText, setChatText] = useState<string>('')
-  const [responseState, setResponseState] = useState(false)
-  const [conversation, setConversation] = useState<
-    RNLlamaOAICompatibleMessage[]
-  >([
-    {
-      role: 'system',
-      content: system_prompt
-    },
-    {
-      role: 'user',
-      content: 'Hi there!'
-    }
-  ])
+  const [response, setResponse] = useState<string>('')
 
   const [loader, setLoader] = useState({
     off: true,
     on: false
   })
 
+  const {speak} = useTTS(response, setIsTTSActive)
+
   useEffect(() => {
-    const updateLoader = () => {
-      if (loader.off) {
-        setLoader({off: false, on: true})
-      } else if (loader.on) {
-        setLoader({off: true, on: false})
-      }
+    if (response) {
+      speak()
+      setResponse('')
+      setChatText('')
     }
-    const interval = setInterval(updateLoader, 600)
-    return () => clearInterval(interval)
-  }, [loader])
+  }, [response, speak])
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout | undefined
+
+    if (responseState) {
+      const updateLoader = () => {
+        setLoader((prevLoader) => ({
+          off: !prevLoader.off,
+          on: !prevLoader.on
+        }))
+      }
+
+      interval = setInterval(updateLoader, 600)
+    } else {
+      if (interval) clearInterval(interval)
+    }
+
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+  }, [responseState])
 
   const handleChat = async () => {
+    Keyboard.dismiss()
     setConversation((prevConvo) => [
       ...prevConvo,
       {role: 'user', content: chatText}
@@ -60,8 +83,9 @@ const ChatContainer = ({model, isLoading}: chatConatainerProps) => {
 
     setResponseState(true)
     const res = await useChatCompletion(model, conversation, setResponseState)
-    console.log('Result', res.text)
-    setChatText('')
+    console.log('Time: ', res.timings)
+    console.log('Result: ', res.text)
+    setResponse(res.text)
   }
 
   return (
@@ -95,7 +119,7 @@ const ChatContainer = ({model, isLoading}: chatConatainerProps) => {
           cursorColor={COLORS.pink}
           value={chatText}
           onChangeText={(text) => {
-            if (!responseState) setChatText(text)
+            if (!responseState && !isTTSActive) setChatText(text)
           }}
           style={{
             flex: 1,
@@ -115,7 +139,7 @@ const ChatContainer = ({model, isLoading}: chatConatainerProps) => {
           }}
           disabled={responseState}
           onPress={() => {
-            if (!isLoading) {
+            if (!isLoading && !isTTSActive) {
               if (chatText.trim() !== '') {
                 handleChat()
               } else {
@@ -132,7 +156,11 @@ const ChatContainer = ({model, isLoading}: chatConatainerProps) => {
             }
           }}
         >
-          <AntDesign name="arrowup" size={18} color={COLORS.pink} />
+          {!responseState ? (
+            <AntDesign name="arrowup" size={18} color={COLORS.pink} />
+          ) : (
+            <FontAwesome6 name="circle-stop" size={18} color={COLORS.pink} />
+          )}
         </TouchableOpacity>
       </KeyboardAvoidingView>
     </View>
